@@ -353,13 +353,9 @@ export default {
 				shareToken: this.shareToken,
 				filePath: this.relativePath,
 				forceRecreate: this.forceRecreate,
-				serialize: (document) => {
-					if (this.isRichEditor) {
-						return (createMarkdownSerializer(this.$editor.schema)).serialize(document)
-					}
-					return serializePlainText(this.$editor)
-
-				},
+				serialize: this.isRichEditor
+					? () => createMarkdownSerializer(this.$editor.schema).serialize(this.$editor.state.doc)
+					: () => serializePlainText(this.$editor),
 			})
 
 			this.listenSyncServiceEvents()
@@ -510,12 +506,10 @@ export default {
 						session: this.currentSession,
 						content,
 						onCreate: ({ editor }) => {
-							this.$syncService.state = editor.state
 							this.$syncService.startSync()
 						},
 						onUpdate: ({ editor }) => {
 							// this.debugContent(editor)
-							this.$syncService.state = editor.state
 						},
 						extensions: [
 							Collaboration.configure({
@@ -533,7 +527,6 @@ export default {
 
 					this.listenEditorEvents()
 
-					this.$syncService.state = this.$editor.state
 				})
 
 		},
@@ -552,7 +545,6 @@ export default {
 
 		onSync({ steps, document }) {
 			this.hasConnectionIssue = false
-			this.$syncService.state = this.$editor.state
 			this.updateLastSavedStatus()
 			this.$nextTick(() => {
 				this.$emit('sync-service:sync')
