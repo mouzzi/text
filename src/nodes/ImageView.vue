@@ -92,11 +92,10 @@
 					</div>
 				</transition>
 				<div class="image__modal">
-					<ShowImageModal 
-						:images="embeddedImagesList"
-						:startIndex="startImageIndex"
+					<ShowImageModal :images="embeddedImagesList"
+						:start-index="startImageIndex"
 						:show="showImageModal"
-						@close="showImageModal=false"/>
+						@close="showImageModal=false" />
 				</div>
 			</div>
 			<div v-else class="image-view__cant_display">
@@ -194,7 +193,7 @@ export default {
 			attachmentMetadata: {},
 			showImageModal: false,
 			embeddedImagesList: [],
-			startImageIndex: null
+			startImageIndex: null,
 		}
 	},
 	computed: {
@@ -340,7 +339,7 @@ export default {
 			})
 		},
 		handleImageClick(src) {
-			let data = `<?xml version="1.0"?>
+			const data = `<?xml version="1.0"?>
 				<d:propfind  xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
 				<d:prop>
 						<d:getlastmodified />
@@ -364,13 +363,13 @@ export default {
 			axios({
 				method: 'PROPFIND',
 				url: generateDavUrl(src.split('/').shift()),
-				data
+				data,
 			}).then((response) => {
 				this.embeddedImagesList = xmlResponseToFilesList(response.data)
-				this.startImageIndex = this.embeddedImagesList.findIndex(image => image.filename == src)
+				this.startImageIndex = this.embeddedImagesList.findIndex(image => image.filename === src)
 				this.showImageModal = true
 			})
-		}
+		},
 	},
 }
 </script>

@@ -1,6 +1,6 @@
 import { generateRemoteUrl } from '@nextcloud/router'
 import { getCurrentUser } from '@nextcloud/auth'
- 
+
 export const getRootPath = function() {
 	if (getCurrentUser()) {
 		return generateRemoteUrl(`dav/files/${getCurrentUser().uid}`)
@@ -10,7 +10,7 @@ export const getRootPath = function() {
 }
 
 export const generateDavUrl = (path) => {
-	return `${getRootPath()}/${path}` 
+	return `${getRootPath()}/${path}`
 }
 
 export const xmlToJson = (xml) => {
@@ -83,13 +83,13 @@ export const xmlResponseToFilesList = (xml) => {
 }
 
 /**
-* Return the current directory, fallback to root
-*
-* @return {string}
-*/
+ * Return the current directory, fallback to root
+ *
+ * @return {string}
+ */
 export const getCurrentDirectory = function() {
 	const currentDirInfo = OCA?.Files?.App?.currentFileList?.dirInfo
-  || { path: '/', name: '' }
+		|| { path: '/', name: '' }
 
 	// Make sure we don't have double slashes
 	return `${currentDirInfo.path}/${currentDirInfo.name}`.replace(/\/\//gi, '/')

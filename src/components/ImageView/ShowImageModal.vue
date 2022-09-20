@@ -1,16 +1,15 @@
 <template>
-	<NcModal
-		v-if="show"
-		@next="showNextImage"
-		@previous="showPreviousImage"
-		@close="$emit('close')"
+	<NcModal v-if="show"
 		size="large"
 		:title="currentImage.basename"
 		:outTransition="true"
 		:hasNext="true"
 		:hasPrevious="true"
 		closeButtonContained="false"
-		dark="true">
+		dark="true"
+		@next="showNextImage"
+		@previous="showPreviousImage"
+		@close="$emit('close')">
 		<div class="modal__content">
 			<img :src="currentImage.source">
 		</div>
@@ -21,36 +20,45 @@
 import NcModal from '@nextcloud/vue/dist/Components/NcModal'
 
 export default {
-	name: "ShowImageModal",
+	name: 'ShowImageModal',
 	components: {
-		NcModal
+		NcModal,
 	},
 	props: {
 		images: {
 			type: Array,
-			default: [],
+			default() {
+				return []
+			},
 			validator(imagesList) {
-				return [] ? true : imagesList.findIndex(({ basename, source }) => !(basename && source)) !== -1				
-			}
+				return (imagesList.length === 0)
+					? true
+					: imagesList.findIndex(({ basename, source }) => !(basename && source)) !== -1
+			},
 		},
 		startIndex: {
 			type: Number,
-			default: 0
+			default: 0,
 		},
 		show: {
 			type: Boolean,
-			default: false
-		}
-	},	
+			default: false,
+		},
+	},
 	data() {
 		return {
-			currentImageIndex: 0
+			currentImageIndex: 0,
 		}
 	},
 	computed: {
 		currentImage() {
 			return this.images[this.currentImageIndex]
-		}
+		},
+	},
+	watch: {
+		startIndex(val) {
+			this.currentImageIndex = val
+		},
 	},
 	methods: {
 		showNextImage() {
@@ -58,16 +66,11 @@ export default {
 			this.currentImage = this.images[this.currentImageIndex]
 		},
 		showPreviousImage() {
-			this.currentImageIndex = this.currentImageIndex <= 0 
-				? this.images.length - 1 
+			this.currentImageIndex = this.currentImageIndex <= 0
+				? this.images.length - 1
 				: this.currentImageIndex - 1
 			this.currentImage = this.images[this.currentImageIndex]
-		}
+		},
 	},
-	watch: {
-		startIndex(val) {
-			this.currentImageIndex = val
-		}
-	}
 }
 </script>
