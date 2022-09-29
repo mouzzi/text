@@ -22,20 +22,14 @@
 
 <template>
 	<div class="text-editor__session-list">
-		<div v-if="$isMobile" v-tooltip="lastSavedStatusTooltip" :class="saveStatusClass" />
+		<div v-if="$isMobile" v-tooltip="lastSavedStatusTooltip" :class="saveStatusClass"/>
 		<div v-else
 			v-tooltip="lastSavedStatusTooltip"
 			class="save-status"
 			:aria-label="t('text', 'Document save status')"
 			:class="lastSavedStatusClass">
-			{{ lastSavedStatus }}
+			{{ lastSavedString }}
 		</div>
-		<SessionList :sessions="sessions">
-			<p slot="lastSaved" class="last-saved">
-				{{ t('text', 'Last saved') }}: {{ lastSavedString }}
-			</p>
-			<GuestNameDialog v-if="$isPublic && !currentSession.userId" :session="currentSession" />
-		</SessionList>
 	</div>
 </template>
 
@@ -148,10 +142,11 @@ export default {
 	}
 
 	.save-status {
+		--color-text-white: white;
 		display: inline-flex;
 		padding: 0;
 		text-overflow: ellipsis;
-		color: var(--color-text-lighter);
+		color: var(--color-text-white);
 		position: relative;
 		top: 9px;
 		min-width: 85px;

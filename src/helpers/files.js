@@ -24,7 +24,8 @@ import { loadState } from '@nextcloud/initial-state'
 import { openMimetypes } from './mime.js'
 import { getSharingToken } from './token.js'
 import RichWorkspace from '../views/RichWorkspace.vue'
-import { imagePath } from '@nextcloud/router'
+import { imagePath, generateRemoteUrl } from '@nextcloud/router'
+import { getCurrentUser } from '@nextcloud/auth'
 import store from '../store/index.js'
 
 const FILE_ACTION_IDENTIFIER = 'Edit with text app'
@@ -42,6 +43,14 @@ const optimalPath = function(from, to) {
 	return relativePath.length < absolutePath.length
 		? relativePath.join('/')
 		: to
+}
+
+const getRootPath = function() {
+	if (getCurrentUser()) {
+		return generateRemoteUrl(`dav/files/${getCurrentUser().uid}`)
+	} else {
+		return generateRemoteUrl('webdav').replace('/remote.php', '/public.php')
+	}
 }
 
 const registerFileCreate = () => {
@@ -181,6 +190,7 @@ const FilesWorkspacePlugin = {
 }
 
 export {
+	getRootPath,
 	optimalPath,
 	registerFileActionFallback,
 	registerFileCreate,

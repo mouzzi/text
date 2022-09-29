@@ -137,16 +137,17 @@ export default {
 <style scoped lang="scss">
 	.avatar-list {
 		border: none;
-		background-color: var(--color-main-background);
+		/* background-color: var(--color-main-background); */
+		background-color: unset;
 		padding: 0;
 		margin: 0;
 		padding-left: 6px;
 		display: inline-flex;
 		flex-direction: row-reverse;
 
-		&:focus {
+		/* &:focus {
 			background-color: #eee;
-		}
+		} */
 
 		.avatar-wrapper {
 			margin: 0 -18px 0 0;

@@ -23,6 +23,7 @@
 <template>
 	<Editor :file-id="fileid"
 		:relative-path="filename"
+		:basename="basename"
 		:active="active"
 		:autofocus="autofocus"
 		:share-token="shareToken"
@@ -39,6 +40,10 @@ export default {
 	},
 	props: {
 		filename: {
+			type: String,
+			default: null,
+		},
+		basename: {
 			type: String,
 			default: null,
 		},
