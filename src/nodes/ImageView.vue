@@ -131,7 +131,6 @@ import ShowImageModal from '../components/ImageView/ShowImageModal.vue'
 import store from './../mixins/store.js'
 import { useAttachmentResolver } from './../components/Editor.provider.js'
 import { mimetypesImages as IMAGE_MIMES } from '../helpers/mime.js'
-import { generateDavUrl, xmlResponseToFilesList } from '../helpers/dav.js'
 import { generateUrl } from '@nextcloud/router'
 import { NodeViewWrapper } from '@tiptap/vue-2'
 import { logger } from '../helpers/logger.js'
@@ -339,36 +338,22 @@ export default {
 			})
 		},
 		handleImageClick(src) {
-			const data = `<?xml version="1.0"?>
-				<d:propfind  xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
-				<d:prop>
-						<d:getlastmodified />
-						<d:getetag />
-						<d:getcontenttype />
-						<d:resourcetype />
-						<oc:fileid />
-						<oc:permissions />
-						<oc:size />
-						<d:getcontentlength />
-						<nc:has-preview />
-						<oc:favorite />
-						<oc:comments-unread />
-						<oc:owner-display-name />
-						<oc:share-types />
-						<nc:contained-folder-count />
-						<nc:contained-file-count />
-				</d:prop>
-				</d:propfind>
-			`
-			axios({
-				method: 'PROPFIND',
-				url: generateDavUrl(src.split('/').shift()),
-				data,
-			}).then((response) => {
-				this.embeddedImagesList = xmlResponseToFilesList(response.data)
-				this.startImageIndex = this.embeddedImagesList.findIndex(image => image.filename === src)
-				this.showImageModal = true
+			const imageViews = Array.from(document.querySelectorAll('div[data-component="image-view"].image-view'))
+			let basename, 
+				relativePath
+
+			imageViews.map(imgv => {
+				relativePath = imgv.getAttribute('data-src')
+				basename = relativePath.split('/').slice(-1).join()
+				const { url: source } = this.$attachmentResolver.resolve(relativePath, true).shift()
+				this.embeddedImagesList.push({
+					source,
+					basename,
+					relativePath,
+				})
 			})
+			this.startImageIndex = this.embeddedImagesList.findIndex(image => image.relativePath === src)
+			this.showImageModal = true
 		},
 	},
 }
