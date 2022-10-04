@@ -29,7 +29,7 @@
 			<div v-if="canDisplayImage"
 				v-click-outside="() => showIcons = false"
 				class="image__view"
-				@click="showIcons = true"
+				@click="handleImageClick(src)"
 				@mouseover="showIcons = true"
 				@mouseleave="showIcons = false">
 				<transition name="fade">
@@ -91,6 +91,13 @@
 						</div>
 					</div>
 				</transition>
+				<div class="image__modal">
+					<ShowImageModal 
+						:images="embeddedImagesList"
+						:startIndex="startImageIndex"
+						:show="showImageModal"
+						@close="showImageModal=false"/>
+				</div>
 			</div>
 			<div v-else class="image-view__cant_display">
 				<transition name="fade">
@@ -121,13 +128,14 @@
 import axios from '@nextcloud/axios'
 import ClickOutside from 'vue-click-outside'
 import { NcButton } from '@nextcloud/vue'
+import ShowImageModal from '../components/ImageView/ShowImageModal.vue'
+import store from './../mixins/store.js'
+import { useAttachmentResolver } from './../components/Editor.provider.js'
+import { mimetypesImages as IMAGE_MIMES } from '../helpers/mime.js'
+import { generateDavUrl, xmlResponseToFilesList } from '../helpers/dav.js'
 import { generateUrl } from '@nextcloud/router'
 import { NodeViewWrapper } from '@tiptap/vue-2'
-
-import store from './../mixins/store.js'
 import { logger } from '../helpers/logger.js'
-import { mimetypesImages as IMAGE_MIMES } from '../helpers/mime.js'
-import { useAttachmentResolver } from '../components/Editor.provider.js'
 import { Image as ImageIcon, Delete as DeleteIcon } from '../components/icons.js'
 
 const getQueryVariable = (src, variable) => {
@@ -163,6 +171,7 @@ export default {
 		ImageIcon,
 		DeleteIcon,
 		NcButton,
+		ShowImageModal,
 		NodeViewWrapper,
 	},
 	directives: {
@@ -183,6 +192,9 @@ export default {
 			errorMessage: null,
 			attachmentType: null,
 			attachmentMetadata: {},
+			showImageModal: false,
+			embeddedImagesList: [],
+			startImageIndex: null
 		}
 	},
 	computed: {
@@ -327,6 +339,38 @@ export default {
 				this.editor.commands.scrollIntoView()
 			})
 		},
+		handleImageClick(src) {
+			let data = `<?xml version="1.0"?>
+				<d:propfind  xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
+				<d:prop>
+						<d:getlastmodified />
+						<d:getetag />
+						<d:getcontenttype />
+						<d:resourcetype />
+						<oc:fileid />
+						<oc:permissions />
+						<oc:size />
+						<d:getcontentlength />
+						<nc:has-preview />
+						<oc:favorite />
+						<oc:comments-unread />
+						<oc:owner-display-name />
+						<oc:share-types />
+						<nc:contained-folder-count />
+						<nc:contained-file-count />
+				</d:prop>
+				</d:propfind>
+			`
+			axios({
+				method: 'PROPFIND',
+				url: generateDavUrl(src.split('/').shift()),
+				data
+			}).then((response) => {
+				this.embeddedImagesList = xmlResponseToFilesList(response.data)
+				this.startImageIndex = this.embeddedImagesList.findIndex(image => image.filename == src)
+				this.showImageModal = true
+			})
+		}
 	},
 }
 </script>
