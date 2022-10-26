@@ -22,7 +22,6 @@
 
 <template>
 	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate, 'empty': showEmptyWorkspace}">
-
 		<Editor v-if="file"
 			v-show="ready"
 			:key="file.path"
@@ -45,6 +44,7 @@
 import axios from '@nextcloud/axios'
 import { generateOcsUrl } from '@nextcloud/router'
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
+import { loadState } from '@nextcloud/initial-state'
 
 import { logger } from '../helpers/logger.js'
 
@@ -101,6 +101,7 @@ export default {
 		},
 	},
 	mounted() {
+		this.loadMenuRichWorkspace()
 		if (this.enabled) {
 			this.getFileInfo()
 		}
@@ -162,28 +163,6 @@ export default {
 					return false
 				})
 		},
-		createNew() {
-			if (this.creating) {
-				return
-			}
-			this.creating = true
-			this.getFileInfo()
-				.then((workspaceFileExists) => {
-					if (!workspaceFileExists) {
-						return window.FileList
-							.createFile('Readme.md', { scrollTo: false, animate: false })
-							.then((status, data) => {
-								return this.getFileInfo()
-							})
-					}
-				})
-				.then(() => {
-					this.autofocus = true
-				})
-				.catch(error => {
-					logger.warn('Create readme failed', { error })
-				})
-		},
 		showRichWorkspace() {
 			this.enabled = true
 			this.getFileInfo()
@@ -214,6 +193,72 @@ export default {
 
 			// schedule to normal behaviour
 			this.$_timeoutAutohide = setTimeout(this.onTimeoutAutohide, 7000) // 7s
+		},
+		loadMenuRichWorkspace() {
+			this.getFileInfo()
+				.then((workspaceFileExists) => {
+					const self = this
+					if (!workspaceFileExists) {
+						const newRichWorkspaceFileMenuPlugin = {
+							attach(menu) {
+								const fileList = menu.fileList
+
+								// only attach to main file list, public view is not supported yet
+								if (fileList.id !== 'files' && fileList.id !== 'files.public') {
+									return
+								}
+
+								menu.render = function() {
+									this.$el.html(this.template({
+										uploadMaxHumanFileSize: 'TODO',
+										uploadLabel: t('files', 'Upload file'),
+										items: this._menuItems,
+									}))
+
+									// trigger upload action also with keyboard navigation on enter
+									this.$el.find('[for="file_upload_start"]').on('keyup', function(event) {
+										if (event.key === ' ' || event.key === 'Enter') {
+											document.getElementById('file_upload_start').click()
+										}
+									})
+									this.$el.find('[data-action="rich-workspace-init"]').on('click', function(event) {
+										window.FileList
+											.createFile('Readme.md', { scrollTo: false, animate: false })
+											.then((status, data) => {
+												menu.removeMenuEntry('rich-workspace-init')
+												return self.getFileInfo()
+											})
+										OC.hideMenus()
+									})
+								}
+
+								// register the new menu entry
+								menu.addMenuEntry({
+									id: 'rich-workspace-init',
+									displayName: t('text', 'Add rich workspace'),
+									templateName: t('text', 'Readme') + '.' + loadState('text', 'default_file_extension'),
+									iconClass: 'icon-filetype-text',
+									fileType: 'file',
+									actionHandler(name) {
+										return window.FileList
+											.createFile('Readme.md', { scrollTo: false, animate: false })
+											.then(() => {
+												menu.removeMenuEntry('rich-workspace-init')
+												return self.getFileInfo()
+											})
+									},
+								})
+							},
+						}
+						OC.Plugins.register('OCA.Files.NewFileMenu', newRichWorkspaceFileMenuPlugin)
+					}
+				})
+				.then(() => {
+					self.autofocus = true
+				})
+				.catch(error => {
+					logger.warn('Create readme failed', { error })
+				})
 		},
 	},
 }
