@@ -224,7 +224,7 @@ export default {
 									this.$el.find('[data-action="rich-workspace-init"]').on('click', function(event) {
 										window.FileList
 											.createFile('Readme.md', { scrollTo: false, animate: false })
-											.then((status, data) => {
+											.then(() => {
 												menu.removeMenuEntry('rich-workspace-init')
 												return self.getFileInfo()
 											})
@@ -239,7 +239,7 @@ export default {
 									templateName: t('text', 'Readme') + '.' + loadState('text', 'default_file_extension'),
 									iconClass: 'icon-filetype-text',
 									fileType: 'file',
-									actionHandler(name) {
+									actionHandler() {
 										return window.FileList
 											.createFile('Readme.md', { scrollTo: false, animate: false })
 											.then(() => {
