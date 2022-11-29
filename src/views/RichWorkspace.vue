@@ -21,17 +21,7 @@
   -->
 
 <template>
-	<div v-if="enabled && active" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate, 'empty': showEmptyWorkspace}">
-		<a v-if="showEmptyWorkspace"
-			tabindex="0"
-			class="empty-workspace"
-			@keyup.enter="createNew"
-			@keyup.space="createNew"
-			@click="createNew">
-			<p class="placeholder">
-				{{ t('text', 'Add notes, lists or links …') }}
-			</p>
-		</a>
+	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate, 'empty': showEmptyWorkspace}">
 
 		<Editor v-if="file"
 			v-show="ready"
@@ -97,7 +87,7 @@ export default {
 			return !!(this.folder && (this.folder.permissions & OC.PERMISSION_CREATE))
 		},
 		showEmptyWorkspace() {
-			return (!this.file || (this.autofocus && !this.ready)) && this.canCreate
+			return (this.file || (this.autofocus && !this.ready)) && this.canCreate
 		},
 	},
 	watch: {
