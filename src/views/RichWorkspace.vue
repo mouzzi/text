@@ -21,7 +21,7 @@
   -->
 
 <template>
-	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate, 'empty': showEmptyWorkspace}">
+	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate}">
 		<Editor v-if="file"
 			v-show="ready"
 			:key="file.path"
@@ -44,9 +44,6 @@
 import axios from '@nextcloud/axios'
 import { generateOcsUrl } from '@nextcloud/router'
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
-import { loadState } from '@nextcloud/initial-state'
-
-import { logger } from '../helpers/logger.js'
 
 const IS_PUBLIC = !!(document.getElementById('isPublic'))
 const WORKSPACE_URL = generateOcsUrl('apps/text' + (IS_PUBLIC ? '/public' : '') + '/workspace', 2)
@@ -86,9 +83,6 @@ export default {
 		canCreate() {
 			return !!(this.folder && (this.folder.permissions & OC.PERMISSION_CREATE))
 		},
-		showEmptyWorkspace() {
-			return (this.file || (this.autofocus && !this.ready)) && this.canCreate
-		},
 	},
 	watch: {
 		path() {
@@ -101,7 +95,6 @@ export default {
 		},
 	},
 	mounted() {
-		this.loadMenuRichWorkspace()
 		if (this.enabled) {
 			this.getFileInfo()
 		}
@@ -194,72 +187,6 @@ export default {
 			// schedule to normal behaviour
 			this.$_timeoutAutohide = setTimeout(this.onTimeoutAutohide, 7000) // 7s
 		},
-		loadMenuRichWorkspace() {
-			this.getFileInfo()
-				.then((workspaceFileExists) => {
-					const self = this
-					if (!workspaceFileExists) {
-						const newRichWorkspaceFileMenuPlugin = {
-							attach(menu) {
-								const fileList = menu.fileList
-
-								// only attach to main file list, public view is not supported yet
-								if (fileList.id !== 'files' && fileList.id !== 'files.public') {
-									return
-								}
-
-								menu.render = function() {
-									this.$el.html(this.template({
-										uploadMaxHumanFileSize: 'TODO',
-										uploadLabel: t('files', 'Upload file'),
-										items: this._menuItems,
-									}))
-
-									// trigger upload action also with keyboard navigation on enter
-									this.$el.find('[for="file_upload_start"]').on('keyup', function(event) {
-										if (event.key === ' ' || event.key === 'Enter') {
-											document.getElementById('file_upload_start').click()
-										}
-									})
-									this.$el.find('[data-action="rich-workspace-init"]').on('click', function(event) {
-										window.FileList
-											.createFile('Readme.md', { scrollTo: false, animate: false })
-											.then(() => {
-												menu.removeMenuEntry('rich-workspace-init')
-												return self.getFileInfo()
-											})
-										OC.hideMenus()
-									})
-								}
-
-								// register the new menu entry
-								menu.addMenuEntry({
-									id: 'rich-workspace-init',
-									displayName: t('text', 'Add rich workspace'),
-									templateName: t('text', 'Readme') + '.' + loadState('text', 'default_file_extension'),
-									iconClass: 'icon-filetype-text',
-									fileType: 'file',
-									actionHandler() {
-										return window.FileList
-											.createFile('Readme.md', { scrollTo: false, animate: false })
-											.then(() => {
-												menu.removeMenuEntry('rich-workspace-init')
-												return self.getFileInfo()
-											})
-									},
-								})
-							},
-						}
-						OC.Plugins.register('OCA.Files.NewFileMenu', newRichWorkspaceFileMenuPlugin)
-					}
-				})
-				.then(() => {
-					self.autofocus = true
-				})
-				.catch(error => {
-					logger.warn('Create readme failed', { error })
-				})
-		},
 	},
 }
 </script>
@@ -291,7 +218,7 @@ export default {
 		color: var(--color-text-maxcontrast);
 	}
 
-	#rich-workspace:deep(div[contenteditable=false]){
+	#rich-workspace div[contenteditable=false] {
 		width: 100%;
 		padding: 0px;
 		background-color: var(--color-main-background);
@@ -299,34 +226,34 @@ export default {
 		border: none;
 	}
 
-	#rich-workspace:deep(.text-editor) {
+	#rich-workspace .text-editor {
 		height: 100%;
 		position: unset !important;
 		top: auto !important;
 	}
 
-	#rich-workspace:deep(.text-editor__wrapper) {
+	#rich-workspace .text-editor__wrapper {
 		position: unset !important;
 		overflow: visible;
 	}
 
-	#rich-workspace:deep(.text-editor__main) {
+	#rich-workspace .text-editor__main {
 		overflow: visible !important;
 	}
 
-	#rich-workspace:deep(.content-wrapper) {
+	#rich-workspace .content-wrapper {
 		overflow: scroll !important;
 		max-height: calc(40vh - 50px);
 		padding-left: 10px;
 		padding-bottom: 10px;
 	}
 
-	#rich-workspace:deep(.text-editor__wrapper .ProseMirror) {
+	#rich-workspace .text-editor__wrapper .ProseMirror {
 		padding: 0px;
 		margin: 0;
 	}
 
-	#rich-workspace:deep(.editor__content) {
+	#rich-workspace .editor__content {
 		margin: 0;
 	}
 

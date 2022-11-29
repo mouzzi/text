@@ -25,8 +25,9 @@ import { subscribe } from '@nextcloud/event-bus'
 import { openMimetypes } from './mime.js'
 import { getSharingToken } from './token.js'
 import RichWorkspace from '../views/RichWorkspace.vue'
-import { imagePath } from '@nextcloud/router'
+import { generateOcsUrl, imagePath } from '@nextcloud/router'
 import store from '../store/index.js'
+import axios from '@nextcloud/axios'
 
 const FILE_ACTION_IDENTIFIER = 'Edit with text app'
 
@@ -139,6 +140,41 @@ const registerFileActionFallback = () => {
 
 }
 
+const newRichWorkspaceFileMenuPlugin = {
+	attach(menu) {
+		const fileList = menu.fileList
+		// only attach to main file list, public view is not supported yet
+		if (fileList.id !== 'files' && fileList.id !== 'files.public') {
+			return
+		}
+
+		// register the new menu entry
+		menu.addMenuEntry({
+			id: 'rich-workspace-init',
+			displayName: t('text', 'Add description'),
+			templateName: t('text', 'Readme') + '.' + loadState('text', 'default_file_extension'),
+			iconClass: 'icon-filetype-text',
+			fileType: 'file',
+			actionHandler() {
+				return window.FileList
+					.createFile('Readme.md', { scrollTo: false, animate: false })
+					.then(() => {
+						menu.removeMenuEntry('rich-workspace-init')
+					})
+			},
+			shouldShow() {
+				const descriptionFile = 'Readme.md';
+				if (fileList.findFile(descriptionFile)) return false;
+				return true;
+			}
+		})
+	},
+}
+
+const addMenuRichWorkspace = () => {
+	OC.Plugins.register('OCA.Files.NewFileMenu', newRichWorkspaceFileMenuPlugin);
+}
+
 const FilesWorkspacePlugin = {
 	el: null,
 
@@ -146,7 +182,6 @@ const FilesWorkspacePlugin = {
 		if (fileList.id !== 'files' && fileList.id !== 'files.public') {
 			return
 		}
-
 		this.el = document.createElement('div')
 		fileList.registerHeader({
 			id: 'workspace',
@@ -160,7 +195,7 @@ const FilesWorkspacePlugin = {
 		if (fileList.id !== 'files' && fileList.id !== 'files.public') {
 			return
 		}
-
+		addMenuRichWorkspace()
 		import('vue').then((module) => {
 			const Vue = module.default
 			this.el.id = 'files-workspace-wrapper'
@@ -174,13 +209,11 @@ const FilesWorkspacePlugin = {
 				},
 				store,
 			}).$mount(this.el)
-
 			subscribe('files:navigation:changed', () => {
 				// Expose if the default file list is active to the component
 				// to only render the workspace if the file list is actually visible
 				vm.active = OCA.Files.App.getCurrentFileList() === fileList
 			})
-
 			fileList.$el.on('urlChanged', data => {
 				vm.path = data.dir.toString()
 			})
