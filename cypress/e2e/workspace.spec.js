@@ -69,21 +69,28 @@ describe('Workspace', function() {
 	})
 
 	it('adds a Readme.md', function() {
+		const url = `**/remote.php/dav/files/**`
+		cy.intercept({ method: 'PUT', url })
+			.as('addDescription')
+
 		cy.get('.files-fileList').should('not.contain', 'Readme.md')
-		cy.openWorkspace()
-			.type('Hello')
-			.should('contain', 'Hello')
+
+		cy.get('.files-controls').within(() => {
+			cy.get('.button.new').click()
+			cy.get('.newFileMenu a.menuitem[data-action="rich-workspace-init"]').click()
+			cy.get('.newFileMenu a.menuitem input.icon-confirm[type="submit"]').click()
+			cy.wait('@addDescription')
+		})
+
 		openSidebar('Readme.md')
-		cy.log('Regression test for #2215')
-		cy.get('#rich-workspace .ProseMirror')
+		cy.get('#rich-workspace .text-editor .text-editor__wrapper')
 			.should('be.visible')
-			.should('contain', 'Hello')
 	})
 
 	it('formats text', function() {
 		cy.openWorkspace()
-			.type('Format me')
-			.type('{selectall}')
+			.type('Format me', { force: true })
+			.type('{selectall}', { force: true })
 		;[
 			['bold', 'strong'],
 			['italic', 'em'],
@@ -104,8 +111,8 @@ describe('Workspace', function() {
 
 	it('creates headings via submenu', function() {
 		cy.openWorkspace()
-			.type('Heading')
-			.type('{selectall}')
+			.type('Heading', { force: true })
+			.type('{selectall}', { force: true })
 		;['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].forEach((heading) => {
 			const actionName = `headings-${heading}`
 
@@ -125,8 +132,8 @@ describe('Workspace', function() {
 
 	it('creates lists', function() {
 		cy.openWorkspace()
-			.type('List me')
-			.type('{selectall}')
+			.type('List me', { force: true })
+			.type('{selectall}', { force: true })
 		;[
 			['unordered-list', 'ul'],
 			['ordered-list', 'ol'],
@@ -176,8 +183,8 @@ describe('Workspace', function() {
 		cy.uploadFile('test.md', 'text/markdown', `${currentFolder}/sub-folder/alpha/test.md`)
 
 		cy.openWorkspace()
-			.type('link me')
-			.type('{selectall}')
+			.type('link me', { force: true })
+			.type('{selectall}', { force: true })
 
 		cy.getSubmenuEntry('insert-link', 'insert-link-file')
 			.click()

@@ -148,6 +148,29 @@ const newRichWorkspaceFileMenuPlugin = {
 			return
 		}
 
+		// menu.render = function() {
+		// 	this.$el.html(this.template({
+		// 		uploadMaxHumanFileSize: 'TODO',
+		// 		uploadLabel: t('files', 'Upload file'),
+		// 		items: this._menuItems,
+		// 	}))
+
+		// 	// Trigger upload action also with keyboard navigation on enter
+		// 	this.$el.find('[for="file_upload_start"]').on('keyup', function(event) {
+		// 		if (event.key === ' ' || event.key === 'Enter') {
+		// 			document.getElementById('file_upload_start').click()
+		// 		}
+		// 	})
+		// 	// this.$el.find('[data-action="rich-workspace-init"]').on('click', function() {
+		// 	// 	window.FileList
+		// 	// 		.createFile('Readme.md', { scrollTo: false, animate: false })
+		// 	// 		.then(() => {
+		// 	// 			menu.removeMenuEntry('rich-workspace-init')
+		// 	// 			OC.hideMenus()
+		// 	// 		})
+		// 	// })
+		// }
+
 		// register the new menu entry
 		menu.addMenuEntry({
 			id: 'rich-workspace-init',
@@ -198,6 +221,7 @@ const FilesWorkspacePlugin = {
 		addMenuRichWorkspace()
 		import('vue').then((module) => {
 			const Vue = module.default
+			const descriptionFile = 'Readme.md'
 			this.el.id = 'files-workspace-wrapper'
 			Vue.prototype.t = window.t
 			Vue.prototype.n = window.n
@@ -206,6 +230,7 @@ const FilesWorkspacePlugin = {
 			const vm = new View({
 				propsData: {
 					path: fileList.getCurrentDirectory(),
+					hasDescriptionFile: !!fileList.findFile(descriptionFile)
 				},
 				store,
 			}).$mount(this.el)
@@ -219,6 +244,9 @@ const FilesWorkspacePlugin = {
 			})
 			fileList.$el.on('changeDirectory', data => {
 				vm.path = data.dir.toString()
+			})
+			fileList.$table.on('DOMSubtreeModified', () => {
+				vm.hasDescriptionFile = !!fileList.findFile(descriptionFile)
 			})
 		})
 	},

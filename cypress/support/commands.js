@@ -322,7 +322,7 @@ Cypress.Commands.add('getMenuEntry', (name) => {
 Cypress.Commands.add('getSubmenuEntry', { prevSubject: 'optional' }, (subject, parent, name) => {
 	return (subject ? cy.wrap(subject) : cy.getMenu())
 		.getActionEntry(parent)
-		.click()
+		.click({force: true})
 		.then(() => cy.getActionSubEntry(name))
 })
 
@@ -332,7 +332,7 @@ Cypress.Commands.add('getActionEntry', { prevSubject: 'optional' }, (subject, na
 })
 
 Cypress.Commands.add('getActionSubEntry', (name) => {
-	return cy.get('.action-item__popper .open').getActionEntry(name)
+	return cy.get('div[popoverbaseclass=action-item__popper]').getActionEntry(name)
 })
 
 Cypress.Commands.add('getContent', { prevSubject: 'optional' }, (subject) => {
@@ -358,8 +358,9 @@ Cypress.Commands.add('clearContent', () => {
 })
 
 Cypress.Commands.add('openWorkspace', () => {
-	cy.get('#rich-workspace .empty-workspace').click()
-	cy.getEditor().find('[data-text-el="editor-content-wrapper"]').click()
+	cy.createDescription()
+	cy.get('#rich-workspace .editor__content').click({force: true})
+	cy.getEditor().find('[data-text-el="editor-content-wrapper"]').click({force: true})
 
 	return cy.getContent()
 })
@@ -381,4 +382,18 @@ Cypress.Commands.add('showHiddenFiles', () => {
 	cy.get('#app-settings-content label[for=showhiddenfilesToggle]')
 		.click()
 	cy.wait('@showHidden')
+})
+
+Cypress.Commands.add('createDescription', () => {
+	const url = `**/remote.php/dav/files/**`
+	cy.intercept({ method: 'PUT', url })
+		.as('addDescription')
+
+	cy.get('.files-fileList').should('not.contain', 'Readme.md')
+	cy.get('.files-controls').within(() => {
+		cy.get('.button.new').click()
+		cy.get('.newFileMenu a.menuitem[data-action="rich-workspace-init"]').click()
+		cy.get('.newFileMenu a.menuitem input.icon-confirm[type="submit"]').click()
+	})
+	cy.wait('@addDescription')
 })

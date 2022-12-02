@@ -21,7 +21,7 @@
   -->
 
 <template>
-	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate}">
+	<div v-if="enabled" id="rich-workspace" :class="{'icon-loading': !loaded || !ready, 'focus': focus, 'dark': darkTheme, 'creatable': canCreate }">
 		<Editor v-if="file"
 			v-show="ready"
 			:key="file.path"
@@ -58,6 +58,10 @@ export default {
 			type: String,
 			required: true,
 		},
+		hasDescriptionFile: {
+			type: Boolean,
+			required: false,
+		},
 		active: {
 			type: Boolean,
 			default: true,
@@ -93,6 +97,9 @@ export default {
 				document.querySelector('#rich-workspace .text-editor__main').scrollTo(0, 0)
 			}
 		},
+		hasDescriptionFile() {
+			this.getFileInfo()
+		}
 	},
 	mounted() {
 		if (this.enabled) {
@@ -193,6 +200,7 @@ export default {
 
 <style lang="scss" scoped>
 	#rich-workspace {
+		border: 2px solid red;
 		padding: 0 50px;
 		/* Slightly reduce vertical space */
 		margin-bottom: -24px;
@@ -202,7 +210,7 @@ export default {
 		z-index: 61;
 		position: relative;
 		&.creatable {
-			min-height: 90px;
+			min-height: 100px;
 		}
 	}
 
