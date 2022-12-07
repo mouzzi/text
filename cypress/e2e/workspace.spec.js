@@ -65,11 +65,11 @@ describe('Workspace', function() {
 		cy.get('.nav-recent')
 			.click()
 		cy.get('#rich-workspace .ProseMirror')
-			.should('not.exist')
+			.should('not.visible')
 	})
 
 	it('adds a Readme.md', function() {
-		const url = `**/remote.php/dav/files/**`
+		const url = '**/remote.php/dav/files/**'
 		cy.intercept({ method: 'PUT', url })
 			.as('addDescription')
 
@@ -130,6 +130,7 @@ describe('Workspace', function() {
 		})
 	})
 
+
 	it('creates lists', function() {
 		cy.openWorkspace()
 			.type('List me', { force: true })
@@ -162,14 +163,14 @@ describe('Workspace', function() {
 
 	it('emoji picker', () => {
 		cy.openWorkspace()
-			.type('# Let\'s smile together{enter}## ')
+			.type('# Let\'s smile together{enter}## ', {force: true})
 
 		cy.getMenuEntry('emoji-picker')
 			.click()
 
 		cy.get('#emoji-mart-list button[aria-label="😀, grinning"]')
 			.first()
-			.click()
+			.click({force: true})
 
 		cy.getEditor()
 			.find('h2')
@@ -222,7 +223,7 @@ describe('Workspace', function() {
 		})
 
 		beforeEach(function() {
-			cy.openWorkspace().type('Callout')
+			cy.openWorkspace().type('Callout', {force: true})
 		})
 		// eslint-disable-next-line cypress/no-async-tests
 		it('create callout', () => {
@@ -293,7 +294,6 @@ describe('Workspace', function() {
 			cy.uploadFile('test.md', 'text/markdown', `${Cypress.currentTest.title}/Anleitung.md`)
 			cy.reload()
 			cy.get('.files-fileList').should('contain', 'Anleitung.md')
-			cy.get('.empty-workspace').should('contain', 'Ajoutez des notes, listes ou liens')
 		})
 	})
 
@@ -301,25 +301,25 @@ describe('Workspace', function() {
 		const checkContent = () => {
 			const txt = Cypress.currentTest.title
 
-			cy.getEditor().find('[data-text-el="editor-content-wrapper"]').click()
+			cy.getEditor().find('[data-text-el="editor-content-wrapper"]').click({force: true})
 
 			cy.getContent()
-				.type(txt)
+				.type(txt, {force: true})
 				.should('contain', txt)
 		}
 
 		it('click', () => {
-			cy.get('#rich-workspace .empty-workspace').click()
+			cy.openWorkspace().click({force: true})
 			checkContent()
 		})
 
 		it('enter', () => {
-			cy.get('#rich-workspace .empty-workspace').type('{enter}')
+			cy.openWorkspace().type('{enter}', {force: true})
 			checkContent()
 		})
 
 		it('spacebar', () => {
-			cy.get('#rich-workspace .empty-workspace')
+			cy.openWorkspace()
 				.trigger('keyup', {
 					keyCode: 32,
 					which: 32,

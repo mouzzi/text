@@ -200,7 +200,6 @@ export default {
 
 <style lang="scss" scoped>
 	#rich-workspace {
-		border: 2px solid red;
 		padding: 0 50px;
 		/* Slightly reduce vertical space */
 		margin-bottom: -24px;

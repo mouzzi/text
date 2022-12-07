@@ -25,9 +25,8 @@ import { subscribe } from '@nextcloud/event-bus'
 import { openMimetypes } from './mime.js'
 import { getSharingToken } from './token.js'
 import RichWorkspace from '../views/RichWorkspace.vue'
-import { generateOcsUrl, imagePath } from '@nextcloud/router'
+import { imagePath } from '@nextcloud/router'
 import store from '../store/index.js'
-import axios from '@nextcloud/axios'
 
 const FILE_ACTION_IDENTIFIER = 'Edit with text app'
 
@@ -148,29 +147,6 @@ const newRichWorkspaceFileMenuPlugin = {
 			return
 		}
 
-		// menu.render = function() {
-		// 	this.$el.html(this.template({
-		// 		uploadMaxHumanFileSize: 'TODO',
-		// 		uploadLabel: t('files', 'Upload file'),
-		// 		items: this._menuItems,
-		// 	}))
-
-		// 	// Trigger upload action also with keyboard navigation on enter
-		// 	this.$el.find('[for="file_upload_start"]').on('keyup', function(event) {
-		// 		if (event.key === ' ' || event.key === 'Enter') {
-		// 			document.getElementById('file_upload_start').click()
-		// 		}
-		// 	})
-		// 	// this.$el.find('[data-action="rich-workspace-init"]').on('click', function() {
-		// 	// 	window.FileList
-		// 	// 		.createFile('Readme.md', { scrollTo: false, animate: false })
-		// 	// 		.then(() => {
-		// 	// 			menu.removeMenuEntry('rich-workspace-init')
-		// 	// 			OC.hideMenus()
-		// 	// 		})
-		// 	// })
-		// }
-
 		// register the new menu entry
 		menu.addMenuEntry({
 			id: 'rich-workspace-init',
@@ -186,16 +162,16 @@ const newRichWorkspaceFileMenuPlugin = {
 					})
 			},
 			shouldShow() {
-				const descriptionFile = 'Readme.md';
-				if (fileList.findFile(descriptionFile)) return false;
-				return true;
-			}
+				const descriptionFile = 'Readme.md'
+				if (fileList.findFile(descriptionFile)) return false
+				return true
+			},
 		})
 	},
 }
 
 const addMenuRichWorkspace = () => {
-	OC.Plugins.register('OCA.Files.NewFileMenu', newRichWorkspaceFileMenuPlugin);
+	OC.Plugins.register('OCA.Files.NewFileMenu', newRichWorkspaceFileMenuPlugin)
 }
 
 const FilesWorkspacePlugin = {

@@ -289,9 +289,9 @@ Cypress.Commands.add('getFile', fileName => {
 })
 
 Cypress.Commands.add('deleteFile', fileName => {
-	cy.get(`.files-fileList tr[data-file="${fileName}"] a.name .action-menu`).click()
-	cy.get(`.files-fileList tr[data-file="${fileName}"] a.name + .popovermenu .action-delete`).click()
-	cy.get(`.files-fileList tr[data-file="${fileName}"]`).should('not.exist')
+	cy.get(`.files-fileList tr[data-file="${ fileName }"] a.name .action-menu`).click()
+	cy.get(`.files-fileList tr[data-file="${ fileName }"] a.name + .popovermenu .action-delete`).click()
+	cy.get(`.files-fileList tr[data-file="${ fileName }"]`).should('not.exist')
 })
 
 Cypress.Commands.add('getModal', () => {
@@ -385,7 +385,7 @@ Cypress.Commands.add('showHiddenFiles', () => {
 })
 
 Cypress.Commands.add('createDescription', () => {
-	const url = `**/remote.php/dav/files/**`
+	const url = '**/remote.php/dav/files/**'
 	cy.intercept({ method: 'PUT', url })
 		.as('addDescription')
 
