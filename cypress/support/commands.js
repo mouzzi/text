@@ -332,7 +332,7 @@ Cypress.Commands.add('getActionEntry', { prevSubject: 'optional' }, (subject, na
 })
 
 Cypress.Commands.add('getActionSubEntry', (name) => {
-	return cy.get('div[popoverbaseclass=action-item__popper]').getActionEntry(name)
+	return cy.get('div[data-text-el="menubar"]').getActionEntry(name)
 })
 
 Cypress.Commands.add('getContent', { prevSubject: 'optional' }, (subject) => {
@@ -393,7 +393,6 @@ Cypress.Commands.add('createDescription', () => {
 	cy.get('.files-controls').within(() => {
 		cy.get('.button.new').click()
 		cy.get('.newFileMenu a.menuitem[data-action="rich-workspace-init"]').click()
-		cy.get('.newFileMenu a.menuitem input.icon-confirm[type="submit"]').click()
 	})
 	cy.wait('@addDescription')
 })

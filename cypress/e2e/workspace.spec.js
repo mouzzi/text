@@ -78,7 +78,6 @@ describe('Workspace', function() {
 		cy.get('.files-controls').within(() => {
 			cy.get('.button.new').click()
 			cy.get('.newFileMenu a.menuitem[data-action="rich-workspace-init"]').click()
-			cy.get('.newFileMenu a.menuitem input.icon-confirm[type="submit"]').click()
 			cy.wait('@addDescription')
 		})
 

@@ -21,7 +21,7 @@
  */
 
 import { loadState } from '@nextcloud/initial-state'
-import { subscribe } from '@nextcloud/event-bus'
+import { emit, subscribe } from '@nextcloud/event-bus'
 import { openMimetypes } from './mime.js'
 import { getSharingToken } from './token.js'
 import RichWorkspace from '../views/RichWorkspace.vue'
@@ -142,6 +142,7 @@ const registerFileActionFallback = () => {
 const newRichWorkspaceFileMenuPlugin = {
 	attach(menu) {
 		const fileList = menu.fileList
+		const descriptionFile = t('text', 'Readme') + '.' + loadState('text', 'default_file_extension')
 		// only attach to main file list, public view is not supported yet
 		if (fileList.id !== 'files' && fileList.id !== 'files.public') {
 			return
@@ -151,18 +152,15 @@ const newRichWorkspaceFileMenuPlugin = {
 		menu.addMenuEntry({
 			id: 'rich-workspace-init',
 			displayName: t('text', 'Add description'),
-			templateName: t('text', 'Readme') + '.' + loadState('text', 'default_file_extension'),
-			iconClass: 'icon-filetype-text',
+			templateName: descriptionFile,
+			iconClass: 'icon-rename',
 			fileType: 'file',
+			useInput: descriptionFile,
 			actionHandler() {
 				return window.FileList
-					.createFile('Readme.md', { scrollTo: false, animate: false })
-					.then(() => {
-						menu.removeMenuEntry('rich-workspace-init')
-					})
+					.createFile(descriptionFile, { scrollTo: false, animate: false })
 			},
 			shouldShow() {
-				const descriptionFile = 'Readme.md'
 				if (fileList.findFile(descriptionFile)) return false
 				return true
 			},
@@ -197,7 +195,7 @@ const FilesWorkspacePlugin = {
 		addMenuRichWorkspace()
 		import('vue').then((module) => {
 			const Vue = module.default
-			const descriptionFile = 'Readme.md'
+			const descriptionFile = t('text', 'Readme') + '.' + loadState('text', 'default_file_extension')
 			this.el.id = 'files-workspace-wrapper'
 			Vue.prototype.t = window.t
 			Vue.prototype.n = window.n
@@ -205,8 +203,7 @@ const FilesWorkspacePlugin = {
 			const View = Vue.extend(RichWorkspace)
 			const vm = new View({
 				propsData: {
-					path: fileList.getCurrentDirectory(),
-					hasDescriptionFile: !!fileList.findFile(descriptionFile)
+					path: fileList.getCurrentDirectory()
 				},
 				store,
 			}).$mount(this.el)
@@ -222,7 +219,11 @@ const FilesWorkspacePlugin = {
 				vm.path = data.dir.toString()
 			})
 			fileList.$table.on('DOMSubtreeModified', () => {
-				vm.hasDescriptionFile = !!fileList.findFile(descriptionFile)
+				if (fileList.findFile(descriptionFile)) {
+					emit('Text::showRichWorkspace')
+				} else {
+					emit('Text::hideRichWorkspace')
+				}
 			})
 		})
 	},

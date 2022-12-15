@@ -58,10 +58,6 @@ export default {
 			type: String,
 			required: true,
 		},
-		hasDescriptionFile: {
-			type: Boolean,
-			required: false,
-		},
 		active: {
 			type: Boolean,
 			default: true,
@@ -96,9 +92,6 @@ export default {
 			if (!newValue) {
 				document.querySelector('#rich-workspace .text-editor__main').scrollTo(0, 0)
 			}
-		},
-		hasDescriptionFile() {
-			this.getFileInfo()
 		}
 	},
 	mounted() {
@@ -148,6 +141,7 @@ export default {
 					this.file = data.file
 					this.editing = true
 					this.loaded = true
+					this.autofocus = true
 					return true
 				})
 				.catch((error) => {
